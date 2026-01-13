@@ -1,0 +1,15 @@
+# docker build --platform linux/amd64,linux/arm64 -f ./Dockerfile-Build --output ./out .
+# Learn about building .NET container images:
+# https://github.com/dotnet/dotnet-docker/blob/main/samples/README.md
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG TARGETARCH
+WORKDIR /source
+
+# Copy source code and publish app
+COPY --link ./app .
+RUN dotnet publish -c Debug -p:UseAppHost=false -o /out
+
+# Output stage
+# Learn more about exporting binaries with Docker: https://docs.docker.com/build/building/export/
+FROM scratch
+COPY --link --from=build /out .
