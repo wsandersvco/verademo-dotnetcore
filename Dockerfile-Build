@@ -1,4 +1,4 @@
-# docker build --platform linux/amd64,linux/arm64 -f ./Dockerfile-Build --output ./out .
+# docker build --no-cache -f ./Dockerfile-Build --output . .
 # Learn about building .NET container images:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/README.md
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
@@ -7,9 +7,16 @@ WORKDIR /source
 
 # Copy source code and publish app
 COPY --link ./app .
-RUN dotnet publish -c Debug -p:UseAppHost=false -o /out
+RUN dotnet publish -c Debug -p:UseAppHost=false -o /publish
+
+RUN apt update -y \
+    && apt install -y --no-install-recommends zip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN zip -r /publish.zip /publish
 
 # Output stage
 # Learn more about exporting binaries with Docker: https://docs.docker.com/build/building/export/
 FROM scratch
-COPY --link --from=build /out .
+
+COPY --link --from=build /publish.zip .
