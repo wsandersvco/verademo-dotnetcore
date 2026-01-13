@@ -1,3 +1,5 @@
+name: SAST-SCA-SBOM
+
 # Running SCA Agent against Repo
 on:
   workflow_dispatch:
